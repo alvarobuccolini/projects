@@ -34,10 +34,7 @@ input,select,textarea{font-family:inherit;color:inherit}
 
 .brand{padding:20px 20px 18px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
 .brand::after{content:'';position:absolute;top:0;right:0;width:40px;height:40px;background:var(--navy-3);clip-path:polygon(100% 0,0 0,100% 100%)}
-.brand-logo{font-family:var(--head);font-weight:900;font-size:22px;line-height:1;letter-spacing:-0.02em}
-.brand-logo .amp{color:var(--text-2);font-weight:400;margin:0 2px}
-.brand-logo .co{color:var(--green)}
-.brand-logo .sa{font-size:12px;vertical-align:super;color:var(--green);letter-spacing:0.05em}
+.brand-logo{font-family:var(--head);font-weight:900;font-size:18px;line-height:1;letter-spacing:0.02em;color:#fff}
 .brand-sub{margin-top:8px;font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--text-2);text-transform:uppercase;line-height:1.4;max-width:180px}
 
 .sede-chip{margin:14px 20px 0;padding:7px 10px;background:var(--navy-2);border:1px solid var(--border);border-radius:var(--r);font-size:11px;color:var(--text-2);font-family:var(--mono);display:flex;align-items:center;gap:6px;cursor:default}
@@ -53,7 +50,7 @@ input,select,textarea{font-family:inherit;color:inherit}
 .sidebar-footer{padding:14px 20px;border-top:1px solid var(--border);font-size:10px;color:var(--text-3);font-family:var(--mono)}
 .sync-status{display:flex;align-items:center;gap:8px;font-size:11px}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text-3);flex-shrink:0}
-.sync-dot.ok{background:var(--green);box-shadow:0 0 8px rgba(63,184,79,.6)}
+.sync-dot.ok{background:var(--green)}
 .sync-dot.loading{background:var(--amber);animation:pulse .9s infinite}
 .sync-dot.error{background:var(--red)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
@@ -236,7 +233,7 @@ textarea{resize:vertical;min-height:80px}
 <div class="layout">
   <aside class="sidebar">
     <div class="brand">
-      <div class="brand-logo">NEHUEL<span class="amp">&amp;</span><span class="co">CO</span>.<span class="sa">SA</span></div>
+      <div class="brand-logo">NEHUEL &amp; CO. S.A.</div>
       <div class="brand-sub">Administración de Flota</div>
     </div>
     <div class="sede-chip" id="sede-chip" title="Filtro global por sede"></div>
@@ -296,7 +293,7 @@ const ET={
   km:{label:'Actualiz. km',color:'#65799a',bc:'badge-gray'},
   otro:{label:'Otro',color:'#9aadc7',bc:'badge-gray'},
 };
-const SEDES=['SAN MARTIN','MENDOZA'];
+const SEDES=['SAN MARTIN','MENDOZA','EDESTE','CAVYAG'];
 const ST={ok:{label:'Al día',cls:'badge-ok'},warn:{label:'Atención',cls:'badge-warn'},bad:{label:'Urgente',cls:'badge-bad'}};
 
 async function api(params){
@@ -436,11 +433,46 @@ function vehicleStatus(v){
 }
 
 // ── VEHICLES ─────────────────────────────────────────────────
+let VEH_SORT='estado';
+let VEH_MARCA='';
+
 function renderVehicles(el){
   if(!API_URL){el.innerHTML=notConfigured();return;}
   const fv=filteredVehicles();
   if(!fv.length){el.innerHTML=`<div class="empty"><div class="empty-title">Sin vehículos ${SEDE_FILTER==='ALL'?'registrados':'en '+SEDE_FILTER}</div>Usá el botón "+ Vehículo" para agregar el primero</div>`;return;}
-  el.innerHTML=`<div class="vehicles-grid">${fv.map(vCard).join('')}</div>`;
+
+  const marcas=[...new Set(fv.map(v=>(v.marca||'').trim()).filter(Boolean))].sort();
+  let veh=VEH_MARCA?fv.filter(v=>(v.marca||'').trim()===VEH_MARCA):fv;
+
+  const SO={bad:0,warn:1,ok:2};
+  veh=[...veh].sort((a,b)=>{
+    if(VEH_SORT==='estado'){const sa=SO[vehicleStatus(a)]??2,sb=SO[vehicleStatus(b)]??2;return sa!==sb?sa-sb:String(a.nombre||'').localeCompare(String(b.nombre||''));}
+    if(VEH_SORT==='km')return(Number(b.km)||0)-(Number(a.km)||0);
+    if(VEH_SORT==='anio')return(Number(a.anio)||0)-(Number(b.anio)||0);
+    if(VEH_SORT==='nombre')return String(a.nombre||'').localeCompare(String(b.nombre||''));
+    return 0;
+  });
+
+  const sortBtns=[['estado','Estado'],['km','Mayor km'],['anio','Antigüedad'],['nombre','Nombre']].map(([k,l])=>
+    `<button style="padding:5px 11px;font-size:11px;font-weight:600;background:${VEH_SORT===k?'var(--green)':'transparent'};border:none;color:${VEH_SORT===k?'#0d1520':'var(--text-3)'};cursor:pointer;border-radius:4px;transition:all .15s;font-family:var(--mono)"
+      onclick="VEH_SORT='${k}';renderVehicles(document.getElementById('content'))">${l}</button>`
+  ).join('');
+
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-family:var(--mono);white-space:nowrap">Marca</span>
+        <select onchange="VEH_MARCA=this.value;renderVehicles(document.getElementById('content'))" style="width:auto;min-width:130px;padding:6px 10px;font-size:12px">
+          <option value="">Todas</option>
+          ${marcas.map(m=>`<option value="${esc(m)}"${VEH_MARCA===m?' selected':''}>${esc(m)}</option>`).join('')}
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+        <span style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-family:var(--mono);white-space:nowrap">Ordenar</span>
+        <div style="display:inline-flex;background:var(--navy-2);border:1px solid var(--border);border-radius:var(--r);padding:3px;gap:2px">${sortBtns}</div>
+      </div>
+    </div>
+    <div class="vehicles-grid">${veh.map(vCard).join('')}</div>`;
 }
 
 function vCard(v){
