@@ -367,6 +367,10 @@ textarea{resize:vertical;min-height:80px}
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
         Resumen
       </div>
+      <div class="nav-item" onclick="navigate('talleres')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        Talleres
+      </div>
       <div class="nav-item" onclick="navigate('config')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
         Configuración
@@ -410,6 +414,10 @@ textarea{resize:vertical;min-height:80px}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     Services
   </button>
+  <button class="bn-item" id="bn-talleres" onclick="navigate('talleres')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    Talleres
+  </button>
   <button class="bn-item" id="bn-dashboard" onclick="navigate('dashboard')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
     Resumen
@@ -427,12 +435,12 @@ const CACHE_KEY='nehuel_fleet_cache_v1';
 let API_URL=localStorage.getItem(CFG_KEY)||'';
 let SEDE_FILTER=localStorage.getItem(SEDE_KEY)||'ALL';
 let GLOBAL_Q='';
-let S={vehicles:[],events:[],page:'vehicles',detail:null,lastSync:null};
+let S={vehicles:[],events:[],talleres:[],page:'vehicles',detail:null,lastSync:null};
 
 // Hidratar desde cache para render instantáneo
 try{
   const cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');
-  if(cached&&cached.vehicles){S.vehicles=cached.vehicles;S.events=cached.events||[];S.lastSync=cached.ts;}
+  if(cached&&cached.vehicles){S.vehicles=cached.vehicles;S.events=cached.events||[];S.talleres=cached.talleres||[];S.lastSync=cached.ts;}
 }catch(e){}
 
 const ET={
@@ -466,8 +474,9 @@ async function loadAll(){
   if(data){
     S.vehicles=(data.vehicles||[]).filter(v=>v&&v.id);
     S.events=(data.events||[]).filter(e=>e&&e.id);
+    S.talleres=(data.talleres||[]).filter(t=>t&&t.id);
     S.lastSync=Date.now();
-    try{localStorage.setItem(CACHE_KEY,JSON.stringify({vehicles:S.vehicles,events:S.events,ts:S.lastSync}));}catch(e){}
+    try{localStorage.setItem(CACHE_KEY,JSON.stringify({vehicles:S.vehicles,events:S.events,talleres:S.talleres,ts:S.lastSync}));}catch(e){}
     document.getElementById('sync-time').textContent='Sync '+new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
   }
   render();
@@ -524,7 +533,7 @@ function toast(msg,type='ok'){
 
 function navigate(page,detail){
   S.page=page;S.detail=detail||null;
-  const map=['vehicles','events','services','dashboard','config'];
+  const map=['vehicles','events','services','dashboard','talleres','config'];
   document.querySelectorAll('.nav-item').forEach((el,i)=>{
     el.classList.toggle('active',map[i]===page);
   });
@@ -567,12 +576,12 @@ function filteredVehicles(){
 function render(){
   renderSedeChip();
   const v=S.detail?S.vehicles.find(x=>String(x.id)===String(S.detail)):null;
-  document.getElementById('page-title').textContent=v?(v.nombre||'—').toUpperCase():{vehicles:'VEHÍCULOS',events:'REGISTROS',services:'SERVICES',dashboard:'RESUMEN',config:'CONFIGURACIÓN'}[S.page];
+  document.getElementById('page-title').textContent=v?(v.nombre||'—').toUpperCase():{vehicles:'VEHÍCULOS',events:'REGISTROS',services:'SERVICES',dashboard:'RESUMEN',talleres:'TALLERES',config:'CONFIGURACIÓN'}[S.page];
   const actions=document.getElementById('topbar-actions');
   const content=document.getElementById('content');
 
   // Buscador solo visible en vehículos y registros, no en config ni detail
-  const showSearch = !S.detail && (S.page==='vehicles'||S.page==='events');
+  const showSearch = !S.detail && (S.page==='vehicles'||S.page==='events'||S.page==='talleres');
   const gs=document.getElementById('global-search-wrap');
   if(gs) gs.style.display=showSearch?'':'none';
   if(!showSearch){GLOBAL_Q='';const inp=document.getElementById('global-q');if(inp)inp.value='';const btn=document.getElementById('global-q-clear');if(btn)btn.style.display='none';}
@@ -591,6 +600,7 @@ function render(){
     events:`${S.events.length} registros totales`,
     services:`Próximos services programados`,
     dashboard:'Estadísticas generales de la flota',
+    talleres:'Red de talleres de la flota',
     config:'Conexión con Google Sheets'
   }[S.page]||'';
 
@@ -606,6 +616,9 @@ function render(){
   }else if(S.page==='dashboard'){
     actions.innerHTML=`<button class="btn btn-sm btn-ghost" onclick="loadAll()">↻ Actualizar</button>`;
     renderDashboard(content);
+  }else if(S.page==='talleres'){
+    actions.innerHTML=`<button class="btn btn-sm btn-primary" onclick="openTallerModal()">+ Taller</button>`;
+    renderTalleres(content);
   }else if(S.page==='config'){
     actions.innerHTML='';renderConfig(content);
   }
@@ -707,6 +720,7 @@ function vCard(v){
       <div class="veh-head-right">
         ${v.sede?`<span class="sede-tag">${esc(v.sede)}</span>`:''}
         ${v.categoria?`<span class="sede-tag" style="background:rgba(91,167,255,.15);color:var(--blue);border:1px solid var(--blue-border)">${esc(v.categoria)}</span>`:''}
+        ${v.rtoEstado&&v.rtoEstado!=='vigente'?`<span class="badge ${v.rtoEstado==='pendiente'?'badge-warn':'badge-bad'}">RTO ${v.rtoEstado.toUpperCase()}</span>`:''}
         <span class="badge ${ST[est].cls}">${ST[est].label}</span>
       </div>
     </div>
@@ -905,8 +919,19 @@ function renderDetail(el,v){
         <div class="dstat"><div class="stat-lbl">Averías activas</div><div class="stat-val" style="color:${pending>0?'var(--red)':'var(--green)'}">${pending}</div></div>
         <div class="dstat"><div class="stat-lbl">Total registros</div><div class="stat-val">${evs.length}</div></div>
       </div>
+      ${(v.rtoUltima||v.rtoVence||v.rtoEstado)?`
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+        <div style="font-size:9px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--mono);margin-bottom:8px">RTO</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          ${v.rtoEstado?`<span class="badge ${v.rtoEstado==='vigente'?'badge-ok':v.rtoEstado==='pendiente'?'badge-warn':'badge-bad'}">${v.rtoEstado.toUpperCase()}</span>`:''}
+          ${v.rtoUltima?`<span style="font-size:12px;color:var(--text-2);font-family:var(--mono)">Última: ${fmtDate(v.rtoUltima)}</span>`:''}
+          ${v.rtoVence?`<span style="font-size:12px;color:var(--text-2);font-family:var(--mono)">Vence: ${fmtDate(v.rtoVence)}</span>`:''}
+          ${v.rtoLugar?`<span style="font-size:12px;color:var(--text-3)">· ${esc(v.rtoLugar)}</span>`:''}
+        </div>
+      </div>`:``}
     </div>
     ${pending>0?`<div class="alert alert-bad">⚠ ${pending} avería${pending>1?'s':''} pendiente${pending>1?'s':''}. Revisá el historial.</div>`:''}
+    ${v.rtoEstado==='vencida'?`<div class="alert alert-bad">⚠ RTO VENCIDA. Renovar antes de circular.</div>`:v.rtoEstado==='pendiente'?`<div class="alert alert-warn">⚠ RTO pendiente de renovación.</div>`:''}
     ${rest!==null&&rest<=0?`<div class="alert alert-warn">⚠ Service VENCIDO. Programá el próximo mantenimiento.</div>`:rest!==null&&rest<3000?`<div class="alert alert-warn">⚠ Quedan ${Number(rest).toLocaleString('es-AR')} km para el próximo service.</div>`:''}
     <div class="section-hdr">
       <span class="section-label">Historial</span>
@@ -1015,6 +1040,87 @@ function renderDashboard(el){
 }
 
 // ── CONFIG ───────────────────────────────────────────────────
+// ── TALLERES ─────────────────────────────────────────────────
+function renderTalleres(el){
+  if(!API_URL){el.innerHTML=notConfigured();return;}
+  let ts=S.talleres;
+  if(GLOBAL_Q){const q=GLOBAL_Q;ts=ts.filter(t=>[t.nombre,t.direccion,t.contacto,t.telefono,t.notas,t.sede].some(s=>String(s||'').toLowerCase().includes(q)));}
+  if(!ts.length){
+    el.innerHTML=`<div class="empty"><div class="empty-title">Sin talleres registrados</div>Agregá talleres para asignarlos a los vehículos</div>`;
+    return;
+  }
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">${ts.map(tallerCard).join('')}</div>`;
+}
+
+function tallerCard(t){
+  const vehCount=S.vehicles.filter(v=>esc(v.taller||'').toLowerCase()===esc(t.nombre||'').toLowerCase()).length;
+  return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:18px;cursor:pointer;transition:all .18s" onclick="openTallerModal('${t.id}')" onmouseover="this.style.borderColor='var(--border-2)'" onmouseout="this.style.borderColor='var(--border)'">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px">
+      <div>
+        <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:3px">${esc(t.nombre||'—')}</div>
+        ${t.sede?`<span style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;padding:2px 7px;border-radius:3px;background:var(--navy-3);color:var(--text-2);text-transform:uppercase;font-weight:500">${esc(t.sede)}</span>`:''}
+      </div>
+      <span style="font-size:11px;font-family:var(--mono);color:var(--text-3);white-space:nowrap;padding-top:2px">${vehCount} veh.</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      ${t.direccion?`<div style="display:flex;align-items:flex-start;gap:8px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px;color:var(--text-3)"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span style="font-size:12px;color:var(--text-2)">${esc(t.direccion)}</span></div>`:''}
+      ${t.telefono?`<div style="display:flex;align-items:center;gap:8px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;color:var(--text-3)"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span style="font-size:12px;color:var(--text-2)">${esc(t.telefono)}</span></div>`:''}
+      ${t.contacto?`<div style="display:flex;align-items:center;gap:8px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;color:var(--text-3)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span style="font-size:12px;color:var(--text-2)">${esc(t.contacto)}</span></div>`:''}
+      ${t.notas?`<div style="font-size:11px;color:var(--text-3);margin-top:4px;line-height:1.5">${esc(t.notas)}</div>`:''}
+    </div>
+  </div>`;
+}
+
+function openTallerModal(id){
+  const t=id?S.talleres.find(x=>String(x.id)===String(id)):null;
+  showModal(`
+    <div class="modal-header"><span class="modal-title">${t?'EDITAR TALLER':'NUEVO TALLER'}</span><button class="btn btn-sm" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><label>Nombre del taller</label><input id="t-nombre" value="${t?esc(t.nombre||''):''}" placeholder="Ej: Lentini Automotores"></div>
+      <div class="form-row-2">
+        <div><label>Sede / Zona</label><select id="t-sede">
+          <option value="">— Todas —</option>
+          ${SEDES.map(s=>`<option value="${s}" ${t&&(t.sede||'').toUpperCase()===s?'selected':''}>${s}</option>`).join('')}
+        </select></div>
+        <div><label>Teléfono</label><input id="t-telefono" value="${t?esc(t.telefono||''):''}" placeholder="+54 260 4..."></div>
+      </div>
+      <div class="form-row"><label>Dirección</label><input id="t-direccion" value="${t?esc(t.direccion||''):''}" placeholder="Av. San Martín 1234"></div>
+      <div class="form-row"><label>Contacto / Responsable</label><input id="t-contacto" value="${t?esc(t.contacto||''):''}" placeholder="Nombre del encargado"></div>
+      <div class="form-row"><label>Especialidad / Notas</label><textarea id="t-notas" placeholder="Mecánica general, gomería, electricidad…">${t?esc(t.notas||''):''}</textarea></div>
+    </div>
+    <div class="modal-footer">
+      ${t?`<button class="btn btn-danger" onclick="deleteTallerConfirm('${t.id}')">Eliminar</button>`:''}
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveTaller('${t?t.id:''}')">Guardar</button>
+    </div>`);
+}
+
+async function saveTaller(id){
+  const nombre=document.getElementById('t-nombre').value.trim();
+  if(!nombre){toast('Ingresá el nombre del taller','error');return;}
+  const data={
+    nombre,
+    sede:document.getElementById('t-sede').value,
+    telefono:document.getElementById('t-telefono').value.trim(),
+    direccion:document.getElementById('t-direccion').value.trim(),
+    contacto:document.getElementById('t-contacto').value.trim(),
+    notas:document.getElementById('t-notas').value.trim()
+  };
+  closeModal();
+  if(id){data.id=id;await api({action:'editTaller',data:JSON.stringify(data)});}
+  else{await api({action:'addTaller',data:JSON.stringify(data)});}
+  toast(id?'Taller actualizado':'Taller agregado');
+  await loadAll();
+}
+
+async function deleteTallerConfirm(id){
+  if(!confirm('¿Eliminar este taller?'))return;
+  closeModal();
+  await api({action:'deleteTaller',id});
+  toast('Taller eliminado');
+  await loadAll();
+}
+
 function renderConfig(el){
   el.innerHTML=`
     <div class="config-card">
@@ -1096,6 +1202,19 @@ function openVehicleModal(id){
           ${Object.entries(ST).map(([k,s])=>`<option value="${k}" ${v&&v.estado===k?'selected':''}>${s.label}</option>`).join('')}
         </select>
       </div>
+      <div class="divider" style="margin:16px 0 14px"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.1em;font-family:var(--mono);margin-bottom:12px">RTO — Revisión Técnica Obligatoria</div>
+      <div class="form-row-3">
+        <div><label>Última RTO</label><input id="m-rto-ultima" type="date" value="${v?esc(v.rtoUltima||''):''}"></div>
+        <div><label>Vence</label><input id="m-rto-vence" type="date" value="${v?esc(v.rtoVence||''):''}"></div>
+        <div><label>Estado RTO</label><select id="m-rto-estado">
+          <option value="">—</option>
+          <option value="vigente" ${v&&v.rtoEstado==='vigente'?'selected':''}>Vigente</option>
+          <option value="pendiente" ${v&&v.rtoEstado==='pendiente'?'selected':''}>Pendiente</option>
+          <option value="vencida" ${v&&v.rtoEstado==='vencida'?'selected':''}>Vencida</option>
+        </select></div>
+      </div>
+      <div class="form-row"><label>Lugar / Planta de inspección</label><input id="m-rto-lugar" value="${v?esc(v.rtoLugar||''):''}" placeholder="Ej: Planta Lowe San Martín"></div>
       <div class="form-row"><label>Observaciones</label><textarea id="m-notas" placeholder="Responsable, observaciones, problemas recurrentes…">${v?esc(v.notas||''):''}</textarea></div>
     </div>
     <div class="modal-footer">
@@ -1121,6 +1240,10 @@ async function saveVehicle(id){
     km:Number(document.getElementById('m-km').value)||0,
     kmProxService:Number(document.getElementById('m-kmprox').value)||0,
     estado:document.getElementById('m-estado').value,
+    rtoUltima:document.getElementById('m-rto-ultima').value,
+    rtoVence:document.getElementById('m-rto-vence').value,
+    rtoEstado:document.getElementById('m-rto-estado').value,
+    rtoLugar:document.getElementById('m-rto-lugar').value.trim(),
     notas:document.getElementById('m-notas').value.trim()
   };
   closeModal();
