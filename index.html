@@ -814,16 +814,18 @@ function openVehicleModal(id){
           <option value="">— Ninguna —</option>
           ${CATEGORIAS.map(c=>`<option value="${c}" ${v&&(v.categoria||'').toUpperCase()===c?'selected':''}>${c}</option>`).join('')}
         </select></div>
-        <div><label>Fecha de adquisición</label><input id="m-fadq" type="date" value="${v?esc(v.fechaAdq||''):''}"></div>
         <div><label>Taller habitual</label><input id="m-taller" value="${v?esc(v.taller||''):''}" placeholder="Lentini, JCLorenzo…"></div>
       </div>
       <div class="form-row-3">
         <div><label>Km actual</label><input id="m-km" type="number" value="${v?v.km||0:0}"></div>
         <div><label>Km próx. service</label><input id="m-kmprox" type="number" value="${v?v.kmProxService||'':''}"></div>
-        <div><label>Estado</label><select id="m-estado">
+        <div><label>Fecha de adquisición</label><input id="m-fadq" type="date" value="${v?esc(v.fechaAdq||''):''}"></div>
+      </div>
+      <div class="form-row">
+        <label>Estado</label><select id="m-estado">
           <option value="">Automático</option>
           ${Object.entries(ST).map(([k,s])=>`<option value="${k}" ${v&&v.estado===k?'selected':''}>${s.label}</option>`).join('')}
-        </select></div>
+        </select>
       </div>
       <div class="form-row"><label>Observaciones</label><textarea id="m-notas" placeholder="Responsable, observaciones, problemas recurrentes…">${v?esc(v.notas||''):''}</textarea></div>
     </div>
