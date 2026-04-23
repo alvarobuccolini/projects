@@ -425,7 +425,8 @@ function kmRestante(v){
   return prox-act;
 }
 function vehicleStatus(v){
-  if(v.estado)return v.estado;
+  // 'warn' y 'bad' son overrides manuales; 'ok' y vacío se recalculan desde km y averías
+  if(v.estado==='warn'||v.estado==='bad')return v.estado;
   const rest=kmRestante(v);
   const pending=S.events.some(e=>String(e.vehiculoId)===String(v.id)&&e.tipo==='averia'&&e.resuelto!=='SI');
   if(pending)return 'bad';
